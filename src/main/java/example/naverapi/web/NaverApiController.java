@@ -2,29 +2,46 @@ package example.naverapi.web;
 
 import example.naverapi.service.NaverApiService;
 import example.naverapi.web.dto.NaverResponse;
+import example.naverapi.web.dto.OrderIdDto;
+import example.naverapi.web.dto.OrderSearchDto;
 import lombok.RequiredArgsConstructor;
+import org.json.JSONArray;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/naver-api")
 @RequiredArgsConstructor
 public class NaverApiController {
     private final NaverApiService service;
-    @GetMapping("/findCredential")
-    ResponseEntity<NaverResponse<String>> findOrders() {
-        String findCredential = service.showIdAndSecret();
-        return ResponseEntity.ok(new NaverResponse<>(HttpStatus.OK.value(), "SUCCESS", findCredential));
+
+    @GetMapping("/auth/token")
+    ResponseEntity<NaverResponse<String>> getToken() {
+        String findToken = service.getToken();
+        return ResponseEntity.ok(new NaverResponse<>(HttpStatus.OK.value(), "SUCCESS", findToken, null));
+    }
+    @GetMapping("/orders/{orderId}")
+    ResponseEntity<NaverResponse<String>> findSingleOrder(@PathVariable(value = "orderId") String orderId) {
+        JSONArray singleOrder = service.findSingleOrder(orderId);
+        return ResponseEntity.ok(new NaverResponse<>(HttpStatus.OK.value(), "SUCCESS", singleOrder.toString(), singleOrder.length()));
     }
 
-    @PostMapping("/getToken")
-    ResponseEntity<NaverResponse<String>> getToken() {
-        String tokenResponse = service.getToken();
-        System.out.println("tokenResponse = " + tokenResponse);
-        return ResponseEntity.ok(new NaverResponse<>(HttpStatus.OK.value(), "SUCCESS", tokenResponse));
+    @PostMapping("/orders/orderItems")
+    ResponseEntity<NaverResponse<String>> findOrderItems(@RequestBody OrderIdDto dto) {
+        System.out.println("NaverApiController.findOrderItems");
+        System.out.println("dto = " + dto);
+        JSONArray singleOrder = service.findOrderItems(dto);
+        return ResponseEntity.ok(new NaverResponse<>(HttpStatus.OK.value(), "SUCCESS", singleOrder.toString(), singleOrder.length()));
+    }
+
+    @PostMapping("/orders")
+    ResponseEntity<NaverResponse<String>> findOrders(@RequestBody OrderSearchDto dto) throws Exception {
+        JSONArray array = service.findOrders(dto);
+        System.out.println("size = " + array.length());
+        for (Object o : array) {
+            System.out.println("order = " + o);
+        }
+        return ResponseEntity.ok(new NaverResponse<>(HttpStatus.OK.value(), "SUCCESS", array.toString(), array.length()));
     }
 }
