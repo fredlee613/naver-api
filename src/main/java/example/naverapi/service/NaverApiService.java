@@ -3,6 +3,8 @@ package example.naverapi.service;
 import example.naverapi.config.NaverProperties;
 import example.naverapi.web.dto.OrderIdDto;
 import example.naverapi.web.dto.OrderSearchDto;
+import example.naverapi.web.dto.PaySettleDto;
+import example.naverapi.web.dto.SignatureDto;
 import lombok.RequiredArgsConstructor;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -105,6 +107,11 @@ public class NaverApiService {
             throw e;  // Re-throw the exception if needed
         }
         return token;
+    }
+
+    public SignatureDto getSignature() {
+        long currentTime = System.currentTimeMillis() - 1000;
+        return new SignatureDto(createSignature(currentTime), currentTime);
     }
 
     private String createSignature(Long timestamp) {
@@ -293,6 +300,65 @@ public class NaverApiService {
         }
     }
 
+    public JSONArray findPaySettle(PaySettleDto dto) throws JSONException {
+        String token = getToken();
+        // Set the request URL
+        String baseUrl = "https://api.commerce.naver.com/external";
+        String endpoint = "/v1/pay-settle/settle/daily";
+
+        // Create WebClient instance
+        WebClient webClient = WebClient.builder()
+                .baseUrl(baseUrl)
+                .defaultHeader(HttpHeaders.AUTHORIZATION, "Bearer " + token) // Bearer 토큰 추가
+                .build();
+
+        UriBuilder uriBuilder = UriComponentsBuilder.fromUriString(baseUrl)
+                .path(endpoint)
+                .queryParam("startDate", dto.startDate())
+                .queryParam("endDate", dto.endDate())
+                .queryParam("pageNumber", dto.pageNumber())
+                .queryParam("pageSize", dto.pageSize());
+
+        String builtUri = uriBuilder.build().toString();
+        System.out.println("Built URI: " + builtUri);
+
+        // Make the GET request for fetch order list
+        // Handle the response
+        try {
+            String responseBody = null;
+            if (dto.startDate() != null) {
+                responseBody = webClient.get()
+                        .uri(builder -> builder
+                                .path(endpoint)
+                                .queryParam("startDate", dto.startDate())
+                                .queryParam("endDate", dto.endDate())
+                                .queryParam("pageNumber", dto.pageNumber())
+                                .queryParam("pageSize", dto.pageSize())
+                                .build())
+                        .retrieve()
+                        .bodyToMono(String.class)
+                        .block();
+            }
+            // Handle the response
+            System.out.println("responseBody = " + responseBody);
+
+            JSONObject mainObject = new JSONObject(responseBody);
+            JSONArray paySettle = new JSONArray();
+            if (mainObject.has("elements")) {
+                paySettle = mainObject.getJSONArray("elements");
+            }
+            return paySettle;
+        } catch (WebClientResponseException e) {
+            HttpHeaders headers = e.getHeaders();
+            System.out.println("traceId = " + headers.get("gncp-gw-trace-id"));
+            System.out.println("content-type = " + headers.get("content-type"));
+            // Print error details including status code and response body
+            System.out.println("HTTP Status Code: " + e.getRawStatusCode());
+            System.out.println("Response Body: " + e.getResponseBodyAsString());
+            throw e;  // Re-throw the exception if needed
+        }
+    }
+
     private String createSignatureByUsingNativeJava(Long timestamp) {
         String appId = properties.getApplicationId();
         String appSecret = properties.getApplicationSecret();
@@ -312,20 +378,6 @@ public class NaverApiService {
             throw new RuntimeException(e);
         }
         return stringBuilder.toString();
-    }
-
-    // List<String>을 JSON 배열 형태로 변환하는 메서드
-    private static String toJsonArray(List<String> list) {
-        StringBuilder jsonArray = new StringBuilder();
-        jsonArray.append("[");
-        for (int i = 0; i < list.size(); i++) {
-            jsonArray.append("\"").append(list.get(i)).append("\"");
-            if (i < list.size() - 1) {
-                jsonArray.append(",");
-            }
-        }
-        jsonArray.append("]");
-        return jsonArray.toString();
     }
 
 }

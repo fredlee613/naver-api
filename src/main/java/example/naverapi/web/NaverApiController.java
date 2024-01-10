@@ -1,9 +1,7 @@
 package example.naverapi.web;
 
 import example.naverapi.service.NaverApiService;
-import example.naverapi.web.dto.NaverResponse;
-import example.naverapi.web.dto.OrderIdDto;
-import example.naverapi.web.dto.OrderSearchDto;
+import example.naverapi.web.dto.*;
 import lombok.RequiredArgsConstructor;
 import org.json.JSONArray;
 import org.springframework.http.HttpStatus;
@@ -15,6 +13,12 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 public class NaverApiController {
     private final NaverApiService service;
+
+    @GetMapping("/auth/signature")
+    ResponseEntity<NaverResponse<SignatureDto>> getSignature() {
+        SignatureDto signature = service.getSignature();
+        return ResponseEntity.ok(new NaverResponse<>(HttpStatus.OK.value(), "SUCCESS", signature, null));
+    }
 
     @GetMapping("/auth/token")
     ResponseEntity<NaverResponse<String>> getToken() {
@@ -43,5 +47,11 @@ public class NaverApiController {
             System.out.println("order = " + o);
         }
         return ResponseEntity.ok(new NaverResponse<>(HttpStatus.OK.value(), "SUCCESS", array.toString(), array.length()));
+    }
+
+    @PostMapping("/pay-settle")
+    ResponseEntity<NaverResponse<String>> findPaySettle(@RequestBody PaySettleDto dto) {
+        JSONArray paySettle = service.findPaySettle(dto);
+        return ResponseEntity.ok(new NaverResponse<>(HttpStatus.OK.value(), "SUCCESS", paySettle.toString(), paySettle.length()));
     }
 }
