@@ -33,8 +33,6 @@ public class NaverApiController {
 
     @PostMapping("/orders/orderItems")
     ResponseEntity<NaverResponse<String>> findOrderItems(@RequestBody OrderIdDto dto) {
-        System.out.println("NaverApiController.findOrderItems");
-        System.out.println("dto = " + dto);
         JSONArray singleOrder = service.findOrderItems(dto);
         return ResponseEntity.ok(new NaverResponse<>(HttpStatus.OK.value(), "SUCCESS", singleOrder.toString(), singleOrder.length()));
     }
@@ -42,10 +40,6 @@ public class NaverApiController {
     @PostMapping("/orders")
     ResponseEntity<NaverResponse<String>> findOrders(@RequestBody OrderSearchDto dto) throws Exception {
         JSONArray array = service.findOrders(dto);
-        System.out.println("size = " + array.length());
-        for (Object o : array) {
-            System.out.println("order = " + o);
-        }
         return ResponseEntity.ok(new NaverResponse<>(HttpStatus.OK.value(), "SUCCESS", array.toString(), array.length()));
     }
 
