@@ -71,7 +71,6 @@ public class NaverApiService {
                 .queryParam("type", type);
 
         String builtUri = uriBuilder.build().toString();
-        System.out.println("Built URI: " + builtUri);
 
         // Make the POST request for the OAuth2 token
         // Handle the response
@@ -94,16 +93,9 @@ public class NaverApiService {
                     .block(); // blocking call, handle this appropriately in a reactive environment
 
             // Handle the response
-            System.out.println("responseBody = " + responseBody);
             token = responseBody.split(",")[0].split(":")[1].replace("\"", "");
-            System.out.println("token = " + token);
         } catch (WebClientResponseException e) {
             HttpHeaders headers = e.getHeaders();
-            System.out.println("traceId = " + headers.get("gncp-gw-trace-id"));
-            System.out.println("content-type = " + headers.get("content-type"));
-            // Print error details including status code and response body
-            System.out.println("HTTP Status Code: " + e.getRawStatusCode());
-            System.out.println("Response Body: " + e.getResponseBodyAsString());
             throw e;  // Re-throw the exception if needed
         }
         return token;
@@ -117,8 +109,6 @@ public class NaverApiService {
     private String createSignature(Long timestamp) {
         String appId = properties.getApplicationId();
         String appSecret = properties.getApplicationSecret();
-        System.out.println("appId = " + appId);
-        System.out.println("appSecret = " + appSecret);
         StringJoiner joiner = new StringJoiner("_");
         joiner.add(appId);
         joiner.add(String.valueOf(timestamp));
@@ -134,8 +124,6 @@ public class NaverApiService {
         String baseUrl = "https://api.commerce.naver.com/external";
         String endpoint = "/v1/pay-order/seller/product-orders/query";
 
-        System.out.println("size = " + dto.productOrderIds().size());
-
         // Create WebClient instance
         WebClient webClient = WebClient.builder()
                 .baseUrl(baseUrl)
@@ -143,7 +131,6 @@ public class NaverApiService {
                 .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
                 .build();
 //        String requestBody = "productOrderIds="+toJsonArray(dto.productOrderIds());
-//        System.out.println("requestBody = " + requestBody);
 
         Map<String, List<String>> requestBodyMap = new HashMap<>();
         requestBodyMap.put("productOrderIds", dto.productOrderIds());
@@ -161,7 +148,6 @@ public class NaverApiService {
                     .block(); // blocking call, handle this appropriately in a reactive environment
 
             // Handle the response
-            System.out.println("responseBody = " + responseBody);
             JSONObject mainObject = new JSONObject(responseBody);
             JSONArray data = new JSONArray();
             if (mainObject.has("data")) {
@@ -170,11 +156,6 @@ public class NaverApiService {
             return data;
         } catch (WebClientResponseException e) {
             HttpHeaders headers = e.getHeaders();
-            System.out.println("traceId = " + headers.get("gncp-gw-trace-id"));
-            System.out.println("content-type = " + headers.get("content-type"));
-            // Print error details including status code and response body
-            System.out.println("HTTP Status Code: " + e.getRawStatusCode());
-            System.out.println("Response Body: " + e.getResponseBodyAsString());
             throw e;  // Re-throw the exception if needed
         }
     }
@@ -195,7 +176,6 @@ public class NaverApiService {
         UriBuilder uriBuilder = UriComponentsBuilder.fromUriString(baseUrl)
                 .path(tokenEndpoint);
         String builtUri = uriBuilder.build().toString();
-        System.out.println("Built URI: " + builtUri);
 
         // Make the GET request for fetch order list
         // Handle the response
@@ -210,8 +190,6 @@ public class NaverApiService {
 
             // Handle the response
 
-            System.out.println("responseBody = " + responseBody);
-
             JSONObject mainObject = new JSONObject(responseBody);
             JSONArray data = new JSONArray();
             if (mainObject.has("data")) {
@@ -220,14 +198,6 @@ public class NaverApiService {
             return data;
         } catch (WebClientResponseException e) {
             HttpHeaders headers = e.getHeaders();
-            for (String s : headers.keySet()) {
-                System.out.println("s = " + headers.get(s));;
-            }
-            System.out.println("traceId = " + headers.get("gncp-gw-trace-id"));
-            System.out.println("content-type = " + headers.get("content-type"));
-            // Print error details including status code and response body
-            System.out.println("HTTP Status Code: " + e.getRawStatusCode());
-            System.out.println("Response Body: " + e.getResponseBodyAsString());
             throw e;  // Re-throw the exception if needed
         }
 
@@ -244,7 +214,6 @@ public class NaverApiService {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSXXX");
         // 원하는 형식으로 포맷팅
         String formattedMidnight = nowWithOffset.format(formatter);
-        System.out.println("formattedMidnight = " + formattedMidnight);
 
 
         // Set the request URL
@@ -263,7 +232,6 @@ public class NaverApiService {
                 .queryParam("lastChangedFrom", formattedMidnight);
 
         String builtUri = uriBuilder.build().toString();
-        System.out.println("Built URI: " + builtUri);
 
         // Make the GET request for fetch order list
         // Handle the response
@@ -280,8 +248,6 @@ public class NaverApiService {
 
             // Handle the response
 
-            System.out.println("responseBody = " + responseBody);
-
             JSONObject mainObject = new JSONObject(responseBody);
             JSONArray lastChangeStatuses = new JSONArray();
             if (mainObject.has("data")) {
@@ -291,11 +257,6 @@ public class NaverApiService {
             return lastChangeStatuses;
         } catch (WebClientResponseException e) {
             HttpHeaders headers = e.getHeaders();
-            System.out.println("traceId = " + headers.get("gncp-gw-trace-id"));
-            System.out.println("content-type = " + headers.get("content-type"));
-            // Print error details including status code and response body
-            System.out.println("HTTP Status Code: " + e.getRawStatusCode());
-            System.out.println("Response Body: " + e.getResponseBodyAsString());
             throw e;  // Re-throw the exception if needed
         }
     }
@@ -320,7 +281,6 @@ public class NaverApiService {
                 .queryParam("pageSize", dto.pageSize());
 
         String builtUri = uriBuilder.build().toString();
-        System.out.println("Built URI: " + builtUri);
 
         // Make the GET request for fetch order list
         // Handle the response
@@ -340,7 +300,6 @@ public class NaverApiService {
                         .block();
             }
             // Handle the response
-            System.out.println("responseBody = " + responseBody);
 
             JSONObject mainObject = new JSONObject(responseBody);
             JSONArray paySettle = new JSONArray();
@@ -350,11 +309,6 @@ public class NaverApiService {
             return paySettle;
         } catch (WebClientResponseException e) {
             HttpHeaders headers = e.getHeaders();
-            System.out.println("traceId = " + headers.get("gncp-gw-trace-id"));
-            System.out.println("content-type = " + headers.get("content-type"));
-            // Print error details including status code and response body
-            System.out.println("HTTP Status Code: " + e.getRawStatusCode());
-            System.out.println("Response Body: " + e.getResponseBodyAsString());
             throw e;  // Re-throw the exception if needed
         }
     }
